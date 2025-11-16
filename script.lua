@@ -5,12 +5,12 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 -- ============================================================================
 
 local Window = Rayfield:CreateWindow({
-   Name = "Westbound visuals",
+   Name = "Westbound Premium Visuals",
    Icon = 0,
-   LoadingTitle = "Free now.",
+   LoadingTitle = "Loading..",
    LoadingSubtitle = "By decro | v1.0",
    ShowText = "Loading...",
-   Theme = "DarkBlue",
+   Theme = "Amethyst",
 
    ToggleUIKeybind = "L", 
 
@@ -31,7 +31,7 @@ local Window = Rayfield:CreateWindow({
    KeySettings = {
       Title = "Westbound Visuals Key",
       Subtitle = "Key System v1.0",
-      Note = "not a free.",
+      Note = "Pay for acces.",
       FileName = "Empty.",
       SaveKey = false,
       GrabKeyFromSite = false,
@@ -197,12 +197,7 @@ local ESPToggle = VisualTab:CreateToggle({
     end,
 })
 
--- ----------------------------------------------------------------------------
--- X-Ray Section
--- ----------------------------------------------------------------------------
-
-local XRaySection = VisualTab:CreateSection("X-Ray")
-
+-- X-Ray in ESP Section
 local XRayToggle = VisualTab:CreateToggle({
     Name = "X-Ray",
     CurrentValue = false,
@@ -227,69 +222,7 @@ local XRayToggle = VisualTab:CreateToggle({
     end
 })
 
--- ----------------------------------------------------------------------------
--- Sky Color Section
--- ----------------------------------------------------------------------------
-
-local AmbientColorSection = VisualTab:CreateSection("Sky Color")
-
-local AmbientColors = {
-    {"Blue", Color3.fromRGB(100, 100, 255)},
-    {"Red", Color3.fromRGB(255, 100, 100)},
-    {"Green", Color3.fromRGB(100, 255, 100)},
-    {"Violet", Color3.fromRGB(200, 100, 255)},
-    {"Yellow", Color3.fromRGB(255, 255, 100)},
-    {"Orange", Color3.fromRGB(255, 150, 50)},
-    {"Reset", Color3.fromRGB(127, 127, 127)}
-}
-
--- Create color buttons
-for _, colorData in ipairs(AmbientColors) do
-    local colorName, colorValue = colorData[1], colorData[2]
-    
-    VisualTab:CreateButton({
-        Name = colorName,
-        Callback = function()
-            game:GetService("Lighting").Ambient = colorValue
-            print("Sky color set to: " .. colorName)
-        end
-    })
-end
-
--- ----------------------------------------------------------------------------
--- World Effects Section
--- ----------------------------------------------------------------------------
-
-local WorldSection = VisualTab:CreateSection("World")
-
-local NoShadowsToggle = VisualTab:CreateToggle({
-    Name = "No Shadows",
-    CurrentValue = false,
-    Callback = function(Value)
-        if Value then
-            for _, part in pairs(workspace:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CastShadow = false
-                end
-            end
-            print("Shadows Disabled")
-        else
-            for _, part in pairs(workspace:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CastShadow = true
-                end
-            end
-            print("Shadows Enabled")
-        end
-    end
-})
-
--- ----------------------------------------------------------------------------
--- Tracers Section
--- ----------------------------------------------------------------------------
-
-local TracersSection = VisualTab:CreateSection("Tracers")
-
+-- Tracers in ESP Section
 local TracersToggle = VisualTab:CreateToggle({
     Name = "Tracers",
     CurrentValue = false,
@@ -325,4 +258,75 @@ local TracersToggle = VisualTab:CreateToggle({
             print("Tracers Disabled")
         end
     end
+})
+
+-- ----------------------------------------------------------------------------
+-- FPS Section
+-- ----------------------------------------------------------------------------
+
+local FPSSection = VisualTab:CreateSection("FPS")
+
+local NoShadowsToggle = VisualTab:CreateToggle({
+    Name = "No Shadows",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            for _, part in pairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CastShadow = false
+                end
+            end
+            print("Shadows Disabled")
+        else
+            for _, part in pairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CastShadow = true
+                end
+            end
+            print("Shadows Enabled")
+        end
+    end
+})
+
+-- ----------------------------------------------------------------------------
+-- Sky Color Section (Fixed)
+-- ----------------------------------------------------------------------------
+
+local SkyColorSection = VisualTab:CreateSection("Sky Color")
+
+-- Create Sky Color Dropdown
+local SkyColorDropdown = VisualTab:CreateDropdown({
+    Name = "Sky Color",
+    Options = {"Blue", "Red", "Green", "Purple", "Yellow", "Orange", "Default"},
+    CurrentOption = "Default",
+    MultipleOptions = false,
+    Callback = function(SelectedOption)
+        local colorName
+        if type(SelectedOption) == "table" then
+            colorName = SelectedOption[1] or "Default"
+        else
+            colorName = SelectedOption
+        end
+        
+        local ColorValue
+        
+        if colorName == "Blue" then
+            ColorValue = Color3.fromRGB(100, 100, 255)
+        elseif colorName == "Red" then
+            ColorValue = Color3.fromRGB(255, 100, 100)
+        elseif colorName == "Green" then
+            ColorValue = Color3.fromRGB(100, 255, 100)
+        elseif colorName == "Purple" then
+            ColorValue = Color3.fromRGB(200, 100, 255)
+        elseif colorName == "Yellow" then
+            ColorValue = Color3.fromRGB(255, 255, 100)
+        elseif colorName == "Orange" then
+            ColorValue = Color3.fromRGB(255, 150, 50)
+        else
+            ColorValue = Color3.fromRGB(127, 127, 127) -- Default
+        end
+        
+        game:GetService("Lighting").Ambient = ColorValue
+        print("Sky color: " .. colorName)
+    end,
 })
