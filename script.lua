@@ -5,7 +5,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 -- ============================================================================
 
 local Window = Rayfield:CreateWindow({
-   Name = "Westbound Premium Visuals",
+   Name = "Westbound Rage + Visuals Premium",
    Icon = 0,
    LoadingTitle = "Loading..",
    LoadingSubtitle = "By decro | v1.0",
@@ -29,7 +29,7 @@ local Window = Rayfield:CreateWindow({
 
    KeySystem = true,
    KeySettings = {
-      Title = "Westbound Visuals Key",
+      Title = "Westbound Premium Key",
       Subtitle = "Key System v1.0",
       Note = "Pay for acces.",
       FileName = "Empty.",
@@ -329,4 +329,76 @@ local SkyColorDropdown = VisualTab:CreateDropdown({
         game:GetService("Lighting").Ambient = ColorValue
         print("Sky color: " .. colorName)
     end,
+})
+
+-- ============================================================================
+-- COMBAT TAB
+-- ============================================================================
+
+local CombatTab = Window:CreateTab("  Combat  ", 4483362458)
+
+-- ----------------------------------------------------------------------------
+-- Rage Section
+-- ----------------------------------------------------------------------------
+
+local RageSection = CombatTab:CreateSection("Rage")
+
+_G.HeadSize = 10
+_G.HitboxesEnabled = false
+
+local HitboxesToggle = CombatTab:CreateToggle({
+    Name = "Hitboxes",
+    CurrentValue = false,
+    Callback = function(Value)
+        _G.HitboxesEnabled = Value
+        
+        if Value then
+            spawn(function()
+                while _G.HitboxesEnabled do
+                    for i, v in next, game:GetService('Players'):GetPlayers() do
+                        if v.Name ~= game:GetService('Players').LocalPlayer.Name then
+                            pcall(function()
+                                if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                                    v.Character.HumanoidRootPart.Size = Vector3.new(_G.HeadSize, _G.HeadSize, _G.HeadSize)
+                                    v.Character.HumanoidRootPart.Transparency = 1
+                                    v.Character.HumanoidRootPart.BrickColor = BrickColor.new("Really blue")
+                                    v.Character.HumanoidRootPart.Material = "Neon"
+                                    v.Character.HumanoidRootPart.CanCollide = false
+                                end
+                            end)
+                        end
+                    end
+                    game:GetService('RunService').RenderStepped:Wait()
+                end
+                
+                for i, v in next, game:GetService('Players'):GetPlayers() do
+                    if v.Name ~= game:GetService('Players').LocalPlayer.Name then
+                        pcall(function()
+                            if v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                                v.Character.HumanoidRootPart.Size = Vector3.new(2, 2, 1)
+                                v.Character.HumanoidRootPart.Transparency = 0
+                                v.Character.HumanoidRootPart.BrickColor = BrickColor.new("Medium stone grey")
+                                v.Character.HumanoidRootPart.Material = "Plastic"
+                                v.Character.HumanoidRootPart.CanCollide = true
+                            end
+                        end)
+                    end
+                end
+            end)
+            print("Hitboxes Enabled")
+        else
+            print("Hitboxes Disabled")
+        end
+    end
+})
+
+local HeadSizeSlider = CombatTab:CreateSlider({
+    Name = "Hitbox Size",
+    Range = {5, 50},
+    Increment = 1,
+    Suffix = "Size",
+    CurrentValue = 10,
+    Callback = function(Value)
+        _G.HeadSize = Value
+    end
 })
