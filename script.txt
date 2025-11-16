@@ -1,0 +1,328 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- ============================================================================
+-- MAIN WINDOW
+-- ============================================================================
+
+local Window = Rayfield:CreateWindow({
+   Name = "Westbound visuals",
+   Icon = 0,
+   LoadingTitle = "Free now.",
+   LoadingSubtitle = "By decro | v1.0",
+   ShowText = "Loading...",
+   Theme = "DarkBlue",
+
+   ToggleUIKeybind = "L", 
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false, 
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "WestboundCon",
+      FileName = "Settings"
+   },
+
+   Discord = {
+      Enabled = false,
+   },
+
+   KeySystem = true,
+   KeySettings = {
+      Title = "Westbound Visuals Key",
+      Subtitle = "Key System v1.0",
+      Note = "not a free.",
+      FileName = "Empty.",
+      SaveKey = false,
+      GrabKeyFromSite = false,
+      Key = {"thevissuuals"}
+   }
+})
+
+-- ============================================================================
+-- VISUAL TAB
+-- ============================================================================
+
+local VisualTab = Window:CreateTab("  Visual  ", 4483362458)
+
+-- ----------------------------------------------------------------------------
+-- Camera Section
+-- ----------------------------------------------------------------------------
+
+local FOVSection = VisualTab:CreateSection("Camera")
+
+local FOVSlider = VisualTab:CreateSlider({
+    Name = "FOV",
+    Range = {70, 120},
+    Increment = 1,
+    Suffix = "FOV",
+    CurrentValue = 70,
+    Callback = function(Value)
+        workspace.CurrentCamera.FieldOfView = Value
+    end
+})
+
+-- ----------------------------------------------------------------------------
+-- ESP Section
+-- ----------------------------------------------------------------------------
+
+local ESPSection = VisualTab:CreateSection("ESP")
+
+local ESPToggle = VisualTab:CreateToggle({ 
+    Name = "ESP",
+    CurrentValue = false,
+    Callback = function(Value)
+        _G.ESPEnabled = Value
+        
+        -- Function to create ESP for a player
+        local function createESP(player)
+            if not player.Character then return end
+            
+            local character = player.Character
+            local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+            if not humanoidRootPart then return end
+            
+            -- Create highlight effect
+            local highlight = Instance.new("Highlight")
+            highlight.FillColor = Color3.fromRGB(255, 0, 0)
+            highlight.OutlineColor = Color3.fromRGB(255, 100, 100)
+            highlight.FillTransparency = 0.5
+            highlight.OutlineTransparency = 0
+            highlight.Parent = character
+            
+            -- Create billboard GUI for name and distance
+            local billboard = Instance.new("BillboardGui")
+            billboard.Name = "ESP_Name"
+            billboard.AlwaysOnTop = true
+            billboard.Size = UDim2.new(0, 200, 0, 50)
+            billboard.StudsOffset = Vector3.new(0, 3, 0)
+            billboard.Adornee = humanoidRootPart
+            billboard.Parent = humanoidRootPart
+            
+            -- Player name label
+            local nameLabel = Instance.new("TextLabel")
+            nameLabel.Name = "NameLabel"
+            nameLabel.BackgroundTransparency = 1
+            nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
+            nameLabel.Position = UDim2.new(0, 0, 0, 0)
+            nameLabel.Text = player.Name
+            nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            nameLabel.TextStrokeTransparency = 0
+            nameLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            nameLabel.TextSize = 14
+            nameLabel.Font = Enum.Font.GothamBold
+            nameLabel.Parent = billboard
+            
+            -- Distance label
+            local distanceLabel = Instance.new("TextLabel")
+            distanceLabel.Name = "DistanceLabel"
+            distanceLabel.BackgroundTransparency = 1
+            distanceLabel.Size = UDim2.new(1, 0, 0.5, 0)
+            distanceLabel.Position = UDim2.new(0, 0, 0.5, 0)
+            distanceLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+            distanceLabel.TextStrokeTransparency = 0
+            distanceLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+            distanceLabel.TextSize = 12
+            distanceLabel.Font = Enum.Font.Gotham
+            distanceLabel.Parent = billboard
+            
+            -- Update distance in real-time
+            local function updateDistance()
+                while _G.ESPEnabled and character and humanoidRootPart do
+                    local localChar = game.Players.LocalPlayer.Character
+                    if localChar and localChar:FindFirstChild("HumanoidRootPart") then
+                        local distance = (humanoidRootPart.Position - localChar.HumanoidRootPart.Position).Magnitude
+                        distanceLabel.Text = math.floor(distance) .. " studs"
+                    end
+                    wait(0.1)
+                end
+            end
+            
+            spawn(updateDistance)
+        end
+        
+        -- Function to remove ESP from a player
+        local function removeESP(player)
+            if player.Character then
+                local character = player.Character
+                if character:FindFirstChild("HumanoidRootPart") then
+                    local espName = character.HumanoidRootPart:FindFirstChild("ESP_Name")
+                    if espName then
+                        espName:Destroy()
+                    end
+                end
+                local highlight = character:FindFirstChild("Highlight")
+                if highlight then
+                    highlight:Destroy()
+                end
+            end
+        end
+        
+        -- Enable/disable ESP for all players
+        if Value then
+            -- Add ESP to existing players
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player ~= game.Players.LocalPlayer then
+                    if player.Character then
+                        createESP(player)
+                    end
+                    player.CharacterAdded:Connect(function(character)
+                        if _G.ESPEnabled then
+                            wait(1)
+                            createESP(player)
+                        end
+                    end)
+                end
+            end
+            
+            -- Add ESP to new players
+            game.Players.PlayerAdded:Connect(function(player)
+                player.CharacterAdded:Connect(function(character)
+                    if _G.ESPEnabled then
+                        wait(1)
+                        createESP(player)
+                    end
+                end)
+            end)
+            
+            print("ESP Enabled")
+        else
+            -- Remove ESP from all players
+            for _, player in pairs(game.Players:GetPlayers()) do
+                removeESP(player)
+            end
+            
+            print("ESP Disabled")
+        end
+    end,
+})
+
+-- ----------------------------------------------------------------------------
+-- X-Ray Section
+-- ----------------------------------------------------------------------------
+
+local XRaySection = VisualTab:CreateSection("X-Ray")
+
+local XRayToggle = VisualTab:CreateToggle({
+    Name = "X-Ray",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            -- Make all parts semi-transparent
+            for _, part in pairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") and part.Transparency < 0.5 then
+                    part.LocalTransparencyModifier = 0.5
+                end
+            end
+            print("X-Ray Enabled")
+        else
+            -- Restore original transparency
+            for _, part in pairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.LocalTransparencyModifier = 0
+                end
+            end
+            print("X-Ray Disabled")
+        end
+    end
+})
+
+-- ----------------------------------------------------------------------------
+-- Sky Color Section
+-- ----------------------------------------------------------------------------
+
+local AmbientColorSection = VisualTab:CreateSection("Sky Color")
+
+local AmbientColors = {
+    {"Blue", Color3.fromRGB(100, 100, 255)},
+    {"Red", Color3.fromRGB(255, 100, 100)},
+    {"Green", Color3.fromRGB(100, 255, 100)},
+    {"Violet", Color3.fromRGB(200, 100, 255)},
+    {"Yellow", Color3.fromRGB(255, 255, 100)},
+    {"Orange", Color3.fromRGB(255, 150, 50)},
+    {"Reset", Color3.fromRGB(127, 127, 127)}
+}
+
+-- Create color buttons
+for _, colorData in ipairs(AmbientColors) do
+    local colorName, colorValue = colorData[1], colorData[2]
+    
+    VisualTab:CreateButton({
+        Name = colorName,
+        Callback = function()
+            game:GetService("Lighting").Ambient = colorValue
+            print("Sky color set to: " .. colorName)
+        end
+    })
+end
+
+-- ----------------------------------------------------------------------------
+-- World Effects Section
+-- ----------------------------------------------------------------------------
+
+local WorldSection = VisualTab:CreateSection("World")
+
+local NoShadowsToggle = VisualTab:CreateToggle({
+    Name = "No Shadows",
+    CurrentValue = false,
+    Callback = function(Value)
+        if Value then
+            for _, part in pairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CastShadow = false
+                end
+            end
+            print("Shadows Disabled")
+        else
+            for _, part in pairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CastShadow = true
+                end
+            end
+            print("Shadows Enabled")
+        end
+    end
+})
+
+-- ----------------------------------------------------------------------------
+-- Tracers Section
+-- ----------------------------------------------------------------------------
+
+local TracersSection = VisualTab:CreateSection("Tracers")
+
+local TracersToggle = VisualTab:CreateToggle({
+    Name = "Tracers",
+    CurrentValue = false,
+    Callback = function(Value)
+        _G.TracersEnabled = Value
+        
+        if Value then
+            spawn(function()
+                while _G.TracersEnabled do
+                    for _, player in pairs(game.Players:GetPlayers()) do
+                        if player ~= game.Players.LocalPlayer and player.Character then
+                            local root = player.Character:FindFirstChild("HumanoidRootPart")
+                            if root then
+                                -- Create temporary beam
+                                local beam = Instance.new("Beam")
+                                beam.Color = ColorSequence.new(Color3.fromRGB(255, 0, 0))
+                                beam.Width0 = 0.2
+                                beam.Width1 = 0.2
+                                beam.Attachment0 = game.Players.LocalPlayer.Character.HumanoidRootPart:FindFirstChildOfClass("Attachment")
+                                beam.Attachment1 = root:FindFirstChildOfClass("Attachment")
+                                beam.Parent = workspace
+                                
+                                -- Remove beam after short time
+                                game:GetService("Debris"):AddItem(beam, 0.1)
+                            end
+                        end
+                    end
+                    wait(0.1)
+                end
+            end)
+            print("Tracers Enabled")
+        else
+            print("Tracers Disabled")
+        end
+    end
+})
